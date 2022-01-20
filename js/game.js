@@ -1,15 +1,16 @@
 const board = document.getElementById("board");
 const MOVE_STEP = 1;
 
+generatePlayer();
+
 for (let i = 0; i < 6; i++) {
     generateEnemy();
 }
 
-
 function generateEnemy() {
     const enemy = document.createElement("img");
     enemy.src = "img/enemy.png";
-    enemy.classList.add("enemy");
+    enemy.classList.add("moving");
 
     board.appendChild(enemy);
     enemy.addEventListener("load", () => {
@@ -24,9 +25,28 @@ function generatePosition(elem) {
             Math.floor(Math.random() * (board.clientWidth - elem.clientWidth))];
 }
 
+function generatePlayer() {
+    const elem = document.createElement("img");
+    elem.src = "img/player.png";
+    elem.classList.add("moving");
+
+    board.appendChild(elem);
+    elem.addEventListener("load", () => {
+        const [top, left] = generatePosition(elem);
+        player = new Player(elem, top, left);
+        keyboardMove(player);
+    });
+}
+
 function randomMove(obj) {
+    let steps = 0;
+    let direction = 0;
+
     const interval = setInterval(() => {
-        const direction = Math.floor(Math.random() * 4);
+        if (steps === 0) {
+            steps = Math.floor(Math.random() * 10) + 1;
+            direction = Math.floor(Math.random() * 4);
+        }
         
         switch (direction) {
             case 0: obj.moveUp(); break;
@@ -34,12 +54,34 @@ function randomMove(obj) {
             case 2: obj.moveDown(); break;
             case 3: obj.moveLeft(); break;
         }
+
+        steps--;
     }, 200);
 
     obj.interval = interval;
 }
 
-class Enemy {
+function keyboardMove(obj) {
+    let interval = null;
+
+    document.addEventListener("keydown", (event) => {
+        if (interval !== null) {
+            clearInterval(interval);
+        }
+        
+        interval = setInterval(() => {
+            switch(event.code) {
+                case "ArrowUp": obj.moveUp(); break;
+                case "ArrowRight": obj.moveRight(); break;
+                case "ArrowDown": obj.moveDown(); break;
+                case "ArrowLeft": obj.moveLeft(); break;
+                default: break;
+            }
+        }, 10);
+    });
+}
+
+class Character {
     constructor(elem, top, left) {
         this.elem = elem;
         this.top = top;
@@ -89,4 +131,12 @@ class Enemy {
         this.left += MOVE_STEP;
         this.elem.style.left = this.left + "px";
     }
+}
+
+class Enemy extends Character {
+
+}
+
+class Player extends Character {
+    
 }
