@@ -1,0 +1,10 @@
+#board {
+    height: 98vh;
+    width: 100%;
+    background: url('img/sand.png');
+}
+
+.enemy {
+    position: absolute;
+    visibility: hidden;
+}
