@@ -1,6 +1,10 @@
 const board = document.getElementById("board");
+const killCounter = document.querySelector("#killCount span");
+
 const MOVE_STEP = 1;
 const enemies = [];
+const enemiesCreateOnKill = 2;
+let kills = 0;
 let player;
 
 generatePlayer();
@@ -83,7 +87,7 @@ function keyboardMove(obj) {
             }
 
             detectCollisions();
-        }, 10);
+        }, 5);
     });
 }
 
@@ -91,13 +95,20 @@ function detectCollisions() {
     for (let i = 0; i < enemies.length; i++) {
         let collision = detectCollision(player, enemies[i]);
 
-        if (collision) { 
-            console.log("collision " + i);
-            console.log(enemies);
-            enemies[i].kill();
-            enemies.splice(i, 1);
-            console.log(enemies);
+        if (collision) {
+            onEnemyKill(i);
         }
+    }
+}
+
+function onEnemyKill(enemyIdx) {
+    enemies[enemyIdx].kill();
+    enemies.splice(enemyIdx, 1);
+    kills++;
+    killCounter.textContent = kills;
+
+    for (let i = 0; i < enemiesCreateOnKill; i++) {
+        generateEnemy();
     }
 }
 
