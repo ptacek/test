@@ -7,4 +7,9 @@
 .moving {
     position: absolute;
     visibility: hidden;
+    z-index: 1000;
+}
+
+.dead {
+    position: absolute;
 }

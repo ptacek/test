@@ -1,5 +1,7 @@
 const board = document.getElementById("board");
 const MOVE_STEP = 1;
+const enemies = [];
+let player;
 
 generatePlayer();
 
@@ -16,6 +18,7 @@ function generateEnemy() {
     enemy.addEventListener("load", () => {
         const [top, left] = generatePosition(enemy);
         enemyObj = new Enemy(enemy, top, left);
+        enemies.push(enemyObj);
         randomMove(enemyObj);
     });
 }
@@ -56,6 +59,7 @@ function randomMove(obj) {
         }
 
         steps--;
+        detectCollisions();
     }, 200);
 
     obj.interval = interval;
@@ -77,8 +81,31 @@ function keyboardMove(obj) {
                 case "ArrowLeft": obj.moveLeft(); break;
                 default: break;
             }
+
+            detectCollisions();
         }, 10);
     });
+}
+
+function detectCollisions() {
+    for (let i = 0; i < enemies.length; i++) {
+        let collision = detectCollision(player, enemies[i]);
+
+        if (collision) { 
+            console.log("collision " + i);
+            console.log(enemies);
+            enemies[i].kill();
+            enemies.splice(i, 1);
+            console.log(enemies);
+        }
+    }
+}
+
+function detectCollision(first, second) {
+    return ((first.top >= second.top && first.top <= second.top + second.height) // Top
+                || (first.top + first.height >= second.top && first.top + first.height <= second.top + second.height)) // Bottom
+                && ((first.left >= second.left && first.left <= second.left + second.width) // left
+                || (first.left + first.width >= second.left && first.left + first.width <= second.left + second.width)); // right
 }
 
 class Character {
@@ -86,6 +113,8 @@ class Character {
         this.elem = elem;
         this.top = top;
         this.left = left;
+        this.height = elem.clientHeight;
+        this.width = elem.clientWidth
         
         elem.style.top = top + "px";
         elem.style.left = left + "px";
@@ -134,9 +163,21 @@ class Character {
 }
 
 class Enemy extends Character {
+    kill() {
+        clearInterval(this.interval);
 
+        let newElem = document.createElement("img")
+        newElem.src = 'img/dead.png';
+        newElem.classList.add("dead");
+        newElem.style.top = this.top + "px";
+        newElem.style.left = this.left + "px";
+        this.elem.remove();
+        this.elem = newElem;
+
+        board.appendChild(newElem);
+    }
 }
 
 class Player extends Character {
-    
+
 }
