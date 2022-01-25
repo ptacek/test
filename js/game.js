@@ -1,11 +1,15 @@
 const board = document.getElementById("board");
 const killCounter = document.querySelector("#killCount span");
 
-const MOVE_STEP = 1;
+const MOVE_STEP = 2;
 const enemies = [];
 const enemiesCreateOnKill = 2;
 let kills = 0;
 let player;
+
+const DIRECTION = {
+    UP: 0, RIGHT: 1, DOWN: 2, LEFT: 3
+}
 
 generatePlayer();
 
@@ -41,7 +45,7 @@ function generatePlayer() {
     elem.addEventListener("load", () => {
         const [top, left] = generatePosition(elem);
         player = new Player(elem, top, left);
-        keyboardMove(player);
+        mouseMove(player);
     });
 }
 
@@ -56,10 +60,10 @@ function randomMove(obj) {
         }
         
         switch (direction) {
-            case 0: obj.moveUp(); break;
-            case 1: obj.moveRight(); break;
-            case 2: obj.moveDown(); break;
-            case 3: obj.moveLeft(); break;
+            case DIRECTION.UP: obj.moveUp(); break;
+            case DIRECTION.RIGHT: obj.moveRight(); break;
+            case DIRECTION.DOWN: obj.moveDown(); break;
+            case DIRECTION.LEFT: obj.moveLeft(); break;
         }
 
         steps--;
@@ -69,25 +73,26 @@ function randomMove(obj) {
     obj.interval = interval;
 }
 
-function keyboardMove(obj) {
-    let interval = null;
-
-    document.addEventListener("keydown", (event) => {
-        if (interval !== null) {
-            clearInterval(interval);
+function mouseMove(obj) {
+    document.addEventListener("mousedown", (event) => {
+        if (player.lock) {
+            return;
         }
         
-        interval = setInterval(() => {
-            switch(event.code) {
-                case "ArrowUp": obj.moveUp(); break;
-                case "ArrowRight": obj.moveRight(); break;
-                case "ArrowDown": obj.moveDown(); break;
-                case "ArrowLeft": obj.moveLeft(); break;
-                default: break;
-            }
+        player.changeDirection(event.clientX, event.clientY);
+        player.lock = true;
+        player.interval = setInterval(() => player.move(), 15);
+    });
 
-            detectCollisions();
-        }, 5);
+    document.addEventListener("mouseup", (event) => {
+        if (player.interval !== null) {
+            clearInterval(player.interval);
+            player.lock = false;
+        }
+    });
+
+    document.addEventListener("mousemove", (event) => {
+        player.changeDirection(event.clientX, event.clientY);
     });
 }
 
@@ -190,5 +195,25 @@ class Enemy extends Character {
 }
 
 class Player extends Character {
+    constructor(elem, top, left) {
+        super(elem, top, left);
+        this.xDirection = 0;
+        this.yDirection = 0;
+    }
 
+    changeDirection(x, y) {
+        this.xDirection = x;
+        this.yDirection = y;
+    }
+
+    move() {
+        let xCenter = this.left + this.width / 2;
+        let yCenter = this.top + this.height / 2;
+
+        this.left += this.xDirection < xCenter ? -MOVE_STEP : MOVE_STEP;
+        this.top += this.yDirection < yCenter ? -MOVE_STEP : MOVE_STEP;
+
+        this.elem.style.left = this.left + "px";
+        this.elem.style.top = this.top + "px";
+    }
 }
