@@ -210,8 +210,13 @@ class Player extends Character {
         let xCenter = this.left + this.width / 2;
         let yCenter = this.top + this.height / 2;
 
-        this.left += this.xDirection < xCenter ? -MOVE_STEP : MOVE_STEP;
-        this.top += this.yDirection < yCenter ? -MOVE_STEP : MOVE_STEP;
+        if (Math.abs(xCenter - this.xDirection) > 1) {
+            this.left += this.xDirection < xCenter ? -MOVE_STEP : MOVE_STEP;
+        }
+
+        if (Math.abs(yCenter - this.yDirection) > 1) {
+            this.top += this.yDirection < yCenter ? -MOVE_STEP : MOVE_STEP;
+        }
 
         this.elem.style.left = this.left + "px";
         this.elem.style.top = this.top + "px";
